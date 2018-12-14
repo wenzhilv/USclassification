@@ -1,4 +1,4 @@
 *.doc
 *.docx
 *.log
-*.xml
+workspace.xml
