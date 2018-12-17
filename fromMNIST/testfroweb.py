@@ -15,7 +15,7 @@ c = 1
 
 # 读取图片
 def read_img(path):
-    cate = [path + '\\' +  x for x in os.listdir(path) if os.path.isdir(path + '\\' + x)]
+    cate = [path + '\\' + x for x in os.listdir(path) if os.path.isdir(path + '\\' + x)]
     imgs = []
     labels = []
     for idx, folder in enumerate(cate):
@@ -31,6 +31,13 @@ def read_img(path):
 
 # 定义一个函数，按批次取数据
 def minibatches(inputs=None, targets=None, batch_size=None, shuffle=False):
+    """
+    :param inputs:  feature, [num, ...] == [num, width, height, img_depth]
+    :param targets:  index of feature
+    :param batch_size:  the size of a training session
+    :param shuffle: Whether shuffle, true denote shuffle
+    :return: [batch_size, ...], [batch_size, cls_num]
+    """
     assert len(inputs) == len(targets)
     if shuffle:
         indices = np.arange(len(inputs))
