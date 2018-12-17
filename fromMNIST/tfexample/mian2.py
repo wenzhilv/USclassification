@@ -178,15 +178,35 @@ def main(_):
     preprocessed_inputs = cls_model.preprocess(inputs)
     prediction_dict = cls_model.predict(preprocessed_inputs)
     loss_dict = cls_model.loss(prediction_dict, labels)
-    loss = loss_dict['loss']
+
+    # loss = loss_dict['loss']
+
+    with tf.name_scope('cross_entropy'):
+        # The raw formulation of cross-entropy,
+        #
+        # tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(tf.softmax(y)),
+        #                               reduction_indices=[1]))
+        #
+        # can be numerically unstable.
+        #
+        # So here we use tf.losses.sparse_softmax_cross_entropy on the
+        # raw logit outputs of the nn_layer above.
+        with tf.name_scope('total'):
+            loss = loss_dict['loss']
+    tf.summary.scalar('cross_entropy', loss)
+
+
     postprocessed_dict = cls_model.postprocess(prediction_dict)
     classes = postprocessed_dict['classes']
     classes_ = tf.identity(classes, name='classes')
 
-    tf.summary.scalar('classes', classes_)
-
     # acc = tf.reduce_mean(tf.cast(tf.equal(classes, labels), 'float'))
-    acc = tf.reduce_mean(tf.cast(tf.equal(classes_, labels), 'float'))
+    # acc = tf.reduce_mean(tf.cast(tf.equal(classes_, labels), 'float'))
+
+    with tf.name_scope('accuracy'):
+        with tf.name_scope('accuracy'):
+            acc = tf.reduce_mean(tf.cast(tf.equal(classes_, labels), 'float'))
+    tf.summary.scalar('accuracy', acc)
     global_step = tf.Variable(0, trainable=False)
     learning_rate = tf.train.exponential_decay(0.05, global_step, 150, 0.9)
 
@@ -209,8 +229,8 @@ def main(_):
             batch_images, batch_labels = next_batch_set(images, targets, batch_size=img_batch)
             train_dict = {inputs: batch_images, labels: batch_labels}
 
-            sess.run(train_step, feed_dict=train_dict)
-            # summary, _ = sess.run([merged, train_step], feed_dict=train_dict)
+            # sess.run(train_step, feed_dict=train_dict)
+            summary, _ = sess.run([merged, train_step], feed_dict=train_dict)
 
             loss_, acc_ = sess.run([loss, acc], feed_dict=train_dict)
 
@@ -218,7 +238,7 @@ def main(_):
                 i + 1, loss_, acc_)
             print(train_text)
             if 0 == i % 5:
-                # train_writer.add_summary(summary, i)
+                train_writer.add_summary(summary, i)
                 saver.save(sess, os.path.join(FLAGS.model_output_path, r'model-%d.ckpt' % i))
         saver.save(sess, FLAGS.model_output_path)
 

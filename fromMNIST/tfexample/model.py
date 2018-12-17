@@ -106,4 +106,5 @@ class Model(object):
             tf.nn.sparse_softmax_cross_entropy_with_logits(
                 logits=logits, labels=groundtruth_lists))
         loss_dict = {'loss': loss}
+        # tf.contrib.slim.losses.softmax_cross_entropy(logits, one_hot_labels)
         return loss_dict
